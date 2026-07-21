@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario de Estudio IMAT → PAES 2026</title>
+<style>
+  :root{
+    --blue:#007AFF; --blue-soft:rgba(0,122,255,.12); --blue-ink:#0561c4;
+    --amber:#FF9500; --amber-soft:rgba(255,149,0,.14); --amber-ink:#b45309;
+    --green:#34C759; --green-soft:rgba(52,199,89,.14);
+    --red:#FF3B30; --red-soft:rgba(255,59,48,.12);
+    --ink:#1d1d1f; --muted:#86868b; --faint:#aeaeb2;
+    --surface:#ffffff; --surface-2:#f5f5f7; --ground:#ececee;
+    --line:#e3e3e6; --line-strong:#d2d2d7;
+    --shadow:0 12px 40px -12px rgba(0,0,0,.28), 0 2px 8px -3px rgba(0,0,0,.12);
+    --radius:14px;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Helvetica,Arial,system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --blue:#0A84FF; --blue-soft:rgba(10,132,255,.2); --blue-ink:#5eacff;
+      --amber:#FF9F0A; --amber-soft:rgba(255,159,10,.2); --amber-ink:#ffb340;
+      --green:#30D158; --green-soft:rgba(48,209,88,.2);
+      --red:#FF453A; --red-soft:rgba(255,69,58,.2);
+      --ink:#f5f5f7; --muted:#98989d; --faint:#6d6d72;
+      --surface:#1c1c1e; --surface-2:#2c2c2e; --ground:#000000;
+      --line:#38383a; --line-strong:#48484a;
+      --shadow:0 16px 50px -12px rgba(0,0,0,.7), 0 2px 8px -3px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="light"]{
+    --blue:#007AFF; --blue-soft:rgba(0,122,255,.12); --blue-ink:#0561c4;
+    --amber:#FF9500; --amber-soft:rgba(255,149,0,.14); --amber-ink:#b45309;
+    --green:#34C759; --green-soft:rgba(52,199,89,.14);
+    --red:#FF3B30; --red-soft:rgba(255,59,48,.12);
+    --ink:#1d1d1f; --muted:#86868b; --faint:#aeaeb2;
+    --surface:#ffffff; --surface-2:#f5f5f7; --ground:#ececee;
+    --line:#e3e3e6; --line-strong:#d2d2d7;
+    --shadow:0 12px 40px -12px rgba(0,0,0,.28), 0 2px 8px -3px rgba(0,0,0,.12);
+  }
+  :root[data-theme="dark"]{
+    --blue:#0A84FF; --blue-soft:rgba(10,132,255,.2); --blue-ink:#5eacff;
+    --amber:#FF9F0A; --amber-soft:rgba(255,159,10,.2); --amber-ink:#ffb340;
+    --green:#30D158; --green-soft:rgba(48,209,88,.2);
+    --red:#FF453A; --red-soft:rgba(255,69,58,.2);
+    --ink:#f5f5f7; --muted:#98989d; --faint:#6d6d72;
+    --surface:#1c1c1e; --surface-2:#2c2c2e; --ground:#000000;
+    --line:#38383a; --line-strong:#48484a;
+    --shadow:0 16px 50px -12px rgba(0,0,0,.7), 0 2px 8px -3px rgba(0,0,0,.5);
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:var(--sans);
+    background:var(--ground);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    line-height:1.45;
+    padding:28px 20px 64px;
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  .app{max-width:1040px;margin:0 auto}
+
+  /* ---------- Header ---------- */
+  .masthead{
+    display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+    gap:16px;margin-bottom:22px;
+  }
+  .brand .eyebrow{
+    font-size:11.5px;font-weight:590;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:6px;
+  }
+  .brand h1{
+    font-size:clamp(22px,3.4vw,30px);font-weight:700;letter-spacing:-.02em;
+    margin:0;line-height:1.08;
+  }
+  .brand h1 .imat{color:var(--blue)}
+  .brand h1 .paes{color:var(--amber)}
+  .legend{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:980px;padding:7px 13px;font-size:12.5px;font-weight:500;
+    box-shadow:0 1px 2px rgba(0,0,0,.04);
+  }
+  .chip .sw{width:9px;height:9px;border-radius:50%;flex:none}
+  .chip .sw.b{background:var(--blue)} .chip .sw.a{background:var(--amber)}
+  .chip b{font-weight:640}
+
+  /* ---------- Calendar shell ---------- */
+  .cal{
+    background:var(--surface);border:1px solid var(--line);
+    border-radius:20px;box-shadow:var(--shadow);overflow:hidden;
+    animation:fade .5s ease both;
+  }
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .cal-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 20px;border-bottom:1px solid var(--line);
+  }
+  .cal-title{display:flex;align-items:baseline;gap:10px}
+  .cal-title .mo{font-size:19px;font-weight:680;letter-spacing:-.01em;text-transform:capitalize}
+  .cal-title .yr{font-size:19px;font-weight:400;color:var(--muted)}
+  .nav{display:flex;align-items:center;gap:6px}
+  .nav button{
+    width:34px;height:34px;border-radius:9px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--ink);font-size:15px;cursor:pointer;
+    display:grid;place-items:center;transition:background .15s,transform .1s,border-color .15s;
+  }
+  .nav button:hover{background:var(--blue-soft);border-color:var(--blue)}
+  .nav button:active{transform:scale(.92)}
+  .nav button:disabled{opacity:.32;cursor:not-allowed;background:var(--surface-2);border-color:var(--line)}
+  .nav .today-btn{width:auto;padding:0 14px;font-size:12.5px;font-weight:560}
+
+  .dow{
+    display:grid;grid-template-columns:repeat(7,1fr);
+    padding:10px 10px 4px;
+  }
+  .dow span{
+    text-align:center;font-size:11px;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--muted);
+  }
+  .dow span.we{color:var(--faint)}
+
+  .grid{
+    display:grid;grid-template-columns:repeat(7,1fr);
+    gap:6px;padding:6px 10px 14px;
+  }
+  .cell{
+    position:relative;min-height:96px;border-radius:11px;
+    border:1px solid var(--line);background:var(--surface-2);
+    padding:8px 9px 10px;cursor:pointer;overflow:hidden;
+    display:flex;flex-direction:column;
+    transition:transform .12s ease,box-shadow .15s ease,border-color .15s ease;
+  }
+  .cell:hover{transform:translateY(-2px);box-shadow:0 8px 20px -10px rgba(0,0,0,.3);z-index:2}
+  .cell.blank{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+  .cell:focus-visible{outline:2.5px solid var(--blue);outline-offset:2px}
+
+  .cell.imat{background:var(--blue-soft);border-color:transparent}
+  .cell.paes{background:var(--amber-soft);border-color:transparent}
+  .cell .num{
+    font-size:14px;font-weight:640;line-height:1;margin-bottom:5px;
+    display:inline-flex;align-items:center;justify-content:center;
+    min-width:24px;height:24px;padding:0 5px;border-radius:7px;align-self:flex-start;
+  }
+  .cell.imat .num{color:var(--blue-ink)}
+  .cell.paes .num{color:var(--amber-ink)}
+  .cell.today .num{background:var(--blue);color:#fff}
+  .cell.paes.today .num{background:var(--amber)}
+  .cell .focus{
+    font-size:10.5px;line-height:1.28;color:var(--muted);font-weight:500;
+    overflow:hidden;flex:1;
+  }
+  .cell.imat .focus{color:var(--blue-ink);opacity:.82}
+  .cell.paes .focus{color:var(--amber-ink);opacity:.85}
+
+  .cell .mile{
+    font-size:9.5px;font-weight:640;letter-spacing:.02em;margin-top:4px;
+    display:inline-flex;align-items:center;gap:4px;color:var(--ink);
+  }
+  .cell .mile::before{content:"🎯";font-size:10px}
+
+  .dots{position:absolute;right:8px;top:9px;display:flex;gap:4px}
+  .dots .d{width:7px;height:7px;border-radius:50%}
+  .dots .d.log{background:var(--muted)}
+  .dots .d.exam-pending{background:var(--faint)}
+  .dots .d.exam-imat{background:var(--blue)}
+  .dots .d.exam-paes{background:var(--amber)}
+  .dots .d.exam-pass{background:var(--green)}
+  .dots .d.exam-fail{background:var(--red)}
+
+  .cal-foot{
+    display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center;
+    padding:13px 20px;border-top:1px solid var(--line);background:var(--surface-2);
+    font-size:11.5px;color:var(--muted);
+  }
+  .cal-foot .lg{display:inline-flex;align-items:center;gap:6px}
+  .cal-foot .lg .d{width:8px;height:8px;border-radius:50%}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;z-index:50;
+    background:rgba(0,0,0,.42);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:22px;
+    opacity:0;pointer-events:none;transition:opacity .22s ease;
+  }
+  .overlay.open{opacity:1;pointer-events:auto}
+  .modal{
+    width:min(880px,100%);max-height:calc(100vh - 44px);
+    background:var(--surface);border:1px solid var(--line);border-radius:20px;
+    box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
+    transform:scale(.96) translateY(8px);transition:transform .24s cubic-bezier(.2,.8,.2,1);
+  }
+  .overlay.open .modal{transform:none}
+
+  .modal-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 20px;border-bottom:1px solid var(--line);
+  }
+  .modal-head .mh-date{font-size:16px;font-weight:680;text-transform:capitalize}
+  .modal-head .mh-tag{
+    font-size:10.5px;font-weight:640;letter-spacing:.08em;text-transform:uppercase;
+    padding:4px 10px;border-radius:980px;margin-left:2px;
+  }
+  .mh-tag.imat{background:var(--blue-soft);color:var(--blue-ink)}
+  .mh-tag.paes{background:var(--amber-soft);color:var(--amber-ink)}
+  .mh-tag.none{background:var(--surface-2);color:var(--muted)}
+  .x{
+    width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--ink);font-size:16px;cursor:pointer;
+    display:grid;place-items:center;transition:background .15s;
+  }
+  .x:hover{background:var(--red-soft);color:var(--red)}
+
+  .cols{display:grid;grid-template-columns:1fr 1fr;overflow:auto}
+  .col{padding:20px;overflow:auto}
+  .col.left{border-right:1px solid var(--line)}
+  .col h3{
+    font-size:12px;font-weight:640;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;align-items:center;gap:8px;
+  }
+  .col h3 .ic{font-size:14px}
+
+  textarea{
+    width:100%;min-height:210px;resize:vertical;
+    font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--ink);
+    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:13px 14px;transition:border-color .15s,box-shadow .15s;
+  }
+  textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  textarea::placeholder{color:var(--faint)}
+
+  .btn{
+    font-family:var(--sans);font-size:14px;font-weight:590;cursor:pointer;
+    border-radius:11px;padding:11px 16px;border:1px solid transparent;
+    transition:filter .15s,transform .1s,background .15s,border-color .15s;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn-primary{background:var(--blue);color:#fff}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn-amber{background:var(--amber);color:#fff}
+  .btn-amber:hover{filter:brightness(1.06)}
+  .btn-ghost{background:var(--surface-2);color:var(--ink);border-color:var(--line)}
+  .btn-ghost:hover{border-color:var(--line-strong)}
+  .btn-full{width:100%}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+
+  .save-row{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .save-note{font-size:12px;color:var(--muted);min-height:16px;transition:color .2s}
+  .save-note.ok{color:var(--green)}
+
+  .saved-meta{
+    margin-top:14px;padding:11px 13px;border-radius:11px;background:var(--surface-2);
+    border:1px solid var(--line);font-size:12px;color:var(--muted);display:none;
+  }
+  .saved-meta.show{display:block}
+  .saved-meta b{color:var(--ink)}
+  .subj-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .subj-tags .st{
+    font-size:11px;font-weight:560;padding:3px 9px;border-radius:980px;
+    background:var(--blue-soft);color:var(--blue-ink);
+  }
+
+  /* ---------- Exam ---------- */
+  .exam-empty{
+    border:1.5px dashed var(--line-strong);border-radius:12px;padding:26px 18px;
+    text-align:center;color:var(--muted);font-size:13px;
+  }
+  .exam-empty .big{font-size:26px;margin-bottom:8px;opacity:.5}
+
+  .exam-status{
+    display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:640;
+    padding:5px 11px;border-radius:980px;margin-bottom:14px;
+  }
+  .exam-status .d{width:8px;height:8px;border-radius:50%}
+  .st-pending{background:var(--surface-2);color:var(--muted)}
+  .st-pending .d{background:var(--faint)}
+  .st-pass{background:var(--green-soft);color:var(--green)}
+  .st-pass .d{background:var(--green)}
+  .st-fail{background:var(--red-soft);color:var(--red)}
+  .st-fail .d{background:var(--red)}
+
+  .exam-summary{font-size:13px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+  .exam-summary b{color:var(--ink)}
+
+  .q{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:14px;margin-bottom:12px;animation:fade .3s ease both;
+  }
+  .q .q-head{display:flex;gap:8px;margin-bottom:11px}
+  .q .q-n{
+    flex:none;width:22px;height:22px;border-radius:6px;background:var(--surface);
+    border:1px solid var(--line);font-size:11px;font-weight:680;
+    display:grid;place-items:center;color:var(--muted);
+  }
+  .q .q-text{font-size:13.5px;font-weight:560;line-height:1.4}
+  .q .q-subj{
+    font-size:10px;font-weight:640;letter-spacing:.04em;text-transform:uppercase;
+    color:var(--muted);margin-top:3px;
+  }
+  .opts{display:flex;flex-direction:column;gap:7px}
+  .opt{
+    display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+    background:var(--surface);border:1.5px solid var(--line);border-radius:9px;
+    padding:10px 12px;font-size:13px;font-family:var(--sans);color:var(--ink);
+    cursor:pointer;transition:border-color .15s,background .15s;
+  }
+  .opt:hover:not(:disabled){border-color:var(--blue)}
+  .opt:disabled{cursor:default}
+  .opt .mk{
+    flex:none;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line-strong);
+    display:grid;place-items:center;font-size:11px;font-weight:700;color:transparent;
+    transition:all .15s;
+  }
+  .opt.selected{border-color:var(--blue);background:var(--blue-soft)}
+  .opt.selected .mk{border-color:var(--blue);background:var(--blue);color:#fff}
+  .opt.correct{border-color:var(--green);background:var(--green-soft)}
+  .opt.correct .mk{border-color:var(--green);background:var(--green);color:#fff}
+  .opt.wrong{border-color:var(--red);background:var(--red-soft)}
+  .opt.wrong .mk{border-color:var(--red);background:var(--red);color:#fff}
+  .opt.muted{opacity:.6}
+
+  .exam-actions{display:flex;gap:10px;margin-top:6px}
+  .exam-actions .btn{flex:1}
+  .score-banner{
+    border-radius:12px;padding:15px 16px;margin-bottom:14px;text-align:center;
+    animation:fade .35s ease both;
+  }
+  .score-banner.pass{background:var(--green-soft)}
+  .score-banner.fail{background:var(--red-soft)}
+  .score-banner .pct{font-size:30px;font-weight:740;letter-spacing:-.02em;line-height:1}
+  .score-banner.pass .pct{color:var(--green)}
+  .score-banner.fail .pct{color:var(--red)}
+  .score-banner .lbl{font-size:12.5px;font-weight:560;margin-top:5px;color:var(--ink)}
+
+  @media (max-width:680px){
+    .cols{grid-template-columns:1fr}
+    .col.left{border-right:none;border-bottom:1px solid var(--line)}
+    .cell{min-height:82px}
+    .cell .focus{display:none}
+    body{padding:18px 12px 48px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="masthead">
+    <div class="brand">
+      <div class="eyebrow">Rendimiento máximo · Punta Arenas 2026</div>
+      <h1>Calendario de Estudio · <span class="imat">IMAT</span> → <span class="paes">PAES</span></h1>
+    </div>
+    <div class="legend">
+      <span class="chip"><span class="sw b"></span>Fase IMAT · <b>21 jul – 30 sep</b></span>
+      <span class="chip"><span class="sw a"></span>Fase PAES · <b>1 oct – 31 dic</b></span>
+    </div>
+  </header>
+
+  <section class="cal">
+    <div class="cal-bar">
+      <div class="cal-title"><span class="mo" id="moLabel">Julio</span><span class="yr" id="yrLabel">2026</span></div>
+      <div class="nav">
+        <button class="today-btn" id="btnToday" title="Ir a hoy">Hoy</button>
+        <button id="btnPrev" aria-label="Mes anterior">‹</button>
+        <button id="btnNext" aria-label="Mes siguiente">›</button>
+      </div>
+    </div>
+    <div class="dow">
+      <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span class="we">Sáb</span><span class="we">Dom</span>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="cal-foot">
+      <span class="lg"><span class="d" style="background:var(--muted)"></span>Bitácora guardada</span>
+      <span class="lg"><span class="d" style="background:var(--faint)"></span>Examen pendiente</span>
+      <span class="lg"><span class="d" style="background:var(--green)"></span>Aprobado 100%</span>
+      <span class="lg"><span class="d" style="background:var(--red)"></span>Requiere repaso</span>
+    </div>
+  </section>
+</div>
+
+<!-- Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mhDate">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span class="mh-date" id="mhDate">—</span>
+        <span class="mh-tag none" id="mhTag">—</span>
+      </div>
+      <button class="x" id="btnClose" aria-label="Cerrar">✕</button>
+    </div>
+    <div class="cols">
+      <div class="col left">
+        <h3><span class="ic">📓</span>Bitácora del Día</h3>
+        <textarea id="logText" placeholder="Escribe lo que estudiaste hoy… Por ejemplo: repasé la célula, mitosis y meiosis; ejercicios de álgebra y funciones; física de cinemática…"></textarea>
+        <div class="save-row">
+          <button class="btn btn-primary btn-full" id="btnSave">Guardar Progreso</button>
+          <div class="save-note" id="saveNote"></div>
+        </div>
+        <div class="saved-meta" id="savedMeta"></div>
+      </div>
+      <div class="col right">
+        <h3><span class="ic">🎯</span>Centro de Repaso Activo</h3>
+        <div id="examZone"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= Banco de preguntas ================= */
+  const BANK = {
+    "BIOLOGÍA":[
+      {q:"¿Cuál es la principal función de la mitocondria en la célula?",o:["Sintetizar proteínas","Producir ATP mediante la respiración celular","Almacenar la información genética","Digerir desechos celulares"],c:1},
+      {q:"A partir de una célula diploide, la meiosis produce:",o:["2 células diploides","4 células haploides","2 células haploides","4 células diploides"],c:1},
+      {q:"En un cruce entre dos heterocigotos (Aa × Aa), la proporción fenotípica esperada es:",o:["1:1","9:3:3:1","3:1","1:2:1"],c:2},
+      {q:"La molécula que lleva la información desde el núcleo hasta los ribosomas es:",o:["El ADN","El ARN de transferencia","El ARN mensajero","El ARN ribosomal"],c:2},
+      {q:"¿Qué biomolécula está formada por cadenas de aminoácidos?",o:["Los carbohidratos","Los lípidos","Las proteínas","Los ácidos nucleicos"],c:2},
+      {q:"Durante la fotosíntesis, las plantas liberan a la atmósfera principalmente:",o:["Dióxido de carbono","Oxígeno","Nitrógeno","Metano"],c:1}
+    ],
+    "QUÍMICA":[
+      {q:"El número atómico de un elemento corresponde a su número de:",o:["Neutrones","Protones","Electrones más neutrones","Unidades de masa"],c:1},
+      {q:"Cuando dos átomos comparten pares de electrones, el enlace formado es:",o:["Iónico","Covalente","Metálico","Puente de hidrógeno"],c:1},
+      {q:"Una disolución con pH = 3 se clasifica como:",o:["Básica","Neutra","Ácida","Anfótera"],c:2},
+      {q:"En la reacción 2H₂ + O₂ → 2H₂O, a partir de 2 moles de H₂ se obtienen:",o:["1 mol de agua","2 moles de agua","3 moles de agua","4 moles de agua"],c:1},
+      {q:"¿Cuál de los siguientes procesos corresponde a una oxidación?",o:["Ganancia de electrones","Pérdida de electrones","Ganancia de protones","Pérdida de neutrones"],c:1},
+      {q:"El enlace característico entre un metal y un no metal, con transferencia de electrones, es:",o:["Covalente apolar","Iónico","Covalente polar","Metálico"],c:1}
+    ],
+    "FÍSICA":[
+      {q:"La segunda ley de Newton se expresa mediante la ecuación:",o:["F = m / a","F = m · a","F = a / m","F = m + a"],c:1},
+      {q:"La unidad de fuerza en el Sistema Internacional es el:",o:["Joule","Watt","Newton","Pascal"],c:2},
+      {q:"Un objeto en caída libre (sin resistencia del aire) tiene una aceleración cercana a:",o:["0 m/s²","9,8 m/s²","1 m/s²","Depende de su masa"],c:1},
+      {q:"El trabajo mecánico se define como el producto entre:",o:["Masa y aceleración","Fuerza y desplazamiento","Fuerza y tiempo","Masa y velocidad"],c:1},
+      {q:"Si se duplica la velocidad de un cuerpo, su energía cinética:",o:["Se duplica","Se cuadruplica","Se mantiene igual","Se reduce a la mitad"],c:1},
+      {q:"La rapidez media se calcula como:",o:["Distancia por tiempo","Distancia dividida por tiempo","Tiempo dividido por distancia","Fuerza por distancia"],c:1}
+    ],
+    "MATEMÁTICAS":[
+      {q:"¿Cuál es la solución de la ecuación 2x + 6 = 0?",o:["x = 3","x = −3","x = 6","x = −6"],c:1},
+      {q:"El valor de log₁₀(1000) es:",o:["2","3","10","100"],c:1},
+      {q:"El teorema de Pitágoras, para un triángulo rectángulo de catetos a, b e hipotenusa c, establece que:",o:["a + b = c","a² + b² = c²","a² − b² = c²","a · b = c"],c:1},
+      {q:"La pendiente de la recta y = 3x + 2 es:",o:["2","3","−2","1/3"],c:1},
+      {q:"Al lanzar una moneda equilibrada, la probabilidad de obtener cara es:",o:["1/4","1/2","1/3","1"],c:1},
+      {q:"El área de un círculo de radio r es:",o:["2πr","πr²","πd","r²"],c:1}
+    ],
+    "COMPRENSIÓN LECTORA":[
+      {q:"La idea principal de un texto corresponde a:",o:["El primer párrafo del texto","El mensaje central que el autor quiere comunicar","La opinión personal del lector","El título del texto"],c:1},
+      {q:"Inferir a partir de un texto significa:",o:["Copiar información textual","Deducir información no explícita usando pistas del texto","Resumir el texto completo","Memorizar los datos"],c:1},
+      {q:"El significado de una palabra según el contexto se determina por:",o:["Su definición en el diccionario","Las palabras y frases que la rodean","El sonido de la palabra","La cantidad de letras"],c:1},
+      {q:"El propósito principal de un texto argumentativo es:",o:["Narrar una historia","Convencer o persuadir sobre una postura","Describir un lugar","Entregar instrucciones"],c:1},
+      {q:"El conector \"sin embargo\" se usa para:",o:["Agregar información","Introducir un contraste u oposición","Dar un ejemplo","Cerrar una conclusión"],c:1},
+      {q:"El propósito comunicativo de un texto expositivo es principalmente:",o:["Emocionar al lector","Informar o explicar un tema de forma objetiva","Vender un producto","Contar una anécdota"],c:1}
+    ]
+  };
+
+  /* Palabras clave que activan cada materia al escanear la bitácora */
+  const KEYWORDS = {
+    "BIOLOGÍA":["biolog","célula","celula","mitosis","meiosis","adn","arn","gen","genétic","genetic","mendel","enzima","atp","respiración","respiracion","fotosíntesis","fotosintesis","proteína","proteina","membrana","fisiolog","evolución","evolucion","ecolog","homeostasis","biomolécul","biomolecul","organismo","hered"],
+    "QUÍMICA":["químic","quimic","átomo","atomo","enlace","estequiometr","mol ","moles","ácido","acido","base","redox","orgánic","organic","reacción","reaccion","tabla periódica","periodica","equilibrio","cinétic","cinetic","solucion","disolución","oxidación","oxidacion","reducción"],
+    "FÍSICA":["físic","fisic","cinemátic","cinematic","dinámic","dinamic","fuerza","newton","energía","energia","trabajo","potencia","termodinámic","termodinamic","velocidad","aceleración","aceleracion","movimiento","gravedad"],
+    "MATEMÁTICAS":["matemátic","matematic","álgebra","algebra","función","funcion","geometr","trigonometr","probabilidad","logaritmo","ecuación","ecuacion","estadístic","estadistic","derivada","integral","pendiente","polinom"],
+    "COMPRENSIÓN LECTORA":["lector","comprensión","comprension","lectura","inferen","texto","vocabulario","idea principal","conector","argumentativ","expositiv","párrafo","parrafo","leer","leí","lei "]
+  };
+
+  const SUBJECTS = Object.keys(BANK);
+
+  /* ================= Fechas / fases ================= */
+  const MONTHS = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+  const TODAY = new Date(2026,6,21); // 21 de julio de 2026 (referencia fija del plan)
+  const MIN = new Date(2026,0,1);
+  const MAX = new Date(2026,11,31);
+  const IMAT_START = new Date(2026,6,21);
+  const IMAT_END   = new Date(2026,8,30);
+  const PAES_START = new Date(2026,9,1);
+  const PAES_END   = new Date(2026,11,31);
+
+  const MILESTONES = {
+    "2026-09-30":"IMAT",
+    "2026-11-30":"PAES",
+    "2026-12-01":"PAES",
+    "2026-12-02":"PAES"
+  };
+
+  function key(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+  function sameDay(a,b){ return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate(); }
+  function phaseOf(d){
+    const t=d.getTime();
+    if(t>=IMAT_START.getTime()&&t<=IMAT_END.getTime()) return "imat";
+    if(t>=PAES_START.getTime()&&t<=PAES_END.getTime()) return "paes";
+    return "none";
+  }
+  const FOCUS = {
+    imat:"Enfoque IMAT: Ciencias y Razonamiento",
+    paes:"Enfoque PAES: Competencia M1/M2 y Ciencias",
+    none:""
+  };
+
+  /* ================= Almacenamiento (LocalStorage) ================= */
+  const STORE_KEY = "imatPaesCalendar_v1";
+  let DATA = load();
+  function load(){
+    try{ return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+  function persist(){
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(DATA)); }
+    catch(e){ /* almacenamiento no disponible */ }
+  }
+  function dayData(k){ return DATA[k] || null; }
+
+  /* ================= Generación de exámenes ================= */
+  function pickRandom(arr,n){
+    const copy=arr.slice(); const out=[];
+    while(copy.length && out.length<n){ out.push(copy.splice(Math.floor(Math.random()*copy.length),1)[0]); }
+    return out;
+  }
+  function detectSubjects(text){
+    const low=" "+text.toLowerCase()+" ";
+    const found=[];
+    for(const subj of SUBJECTS){
+      if(KEYWORDS[subj].some(w=>low.includes(w))) found.push(subj);
+    }
+    return found;
+  }
+  function buildExam(text){
+    const subjects=detectSubjects(text);
+    let questions=[];
+    let usedSubjects=[];
+    if(subjects.length){
+      // Reparte hasta 5 preguntas entre las materias detectadas
+      usedSubjects=subjects;
+      const perSubj={};
+      subjects.forEach(s=>{ perSubj[s]=pickRandom(BANK[s], subjects.length===1?5:Math.max(2,Math.ceil(5/subjects.length))); });
+      // Intercala y recorta a 5
+      let i=0, keep=true;
+      while(questions.length<5 && keep){
+        keep=false;
+        for(const s of subjects){
+          if(perSubj[s][i]){ questions.push({...perSubj[s][i],subj:s}); keep=true; if(questions.length>=5) break; }
+        }
+        i++;
+      }
+    }else{
+      // Bitácora genérica → 3 preguntas aleatorias de todo el banco
+      const pool=[];
+      SUBJECTS.forEach(s=>BANK[s].forEach(q=>pool.push({...q,subj:s})));
+      questions=pickRandom(pool,3);
+      usedSubjects=[...new Set(questions.map(q=>q.subj))];
+    }
+    return {
+      questions:questions.map(q=>({q:q.q,o:q.o,c:q.c,subj:q.subj})),
+      subjects:usedSubjects,
+      generic:subjects.length===0,
+      createdAt:Date.now()
+    };
+  }
+
+  /* ================= Render del calendario ================= */
+  let view = new Date(2026,6,1); // mes visible, empieza en julio 2026
+  const grid=document.getElementById("grid");
+  const moLabel=document.getElementById("moLabel");
+  const yrLabel=document.getElementById("yrLabel");
+  const btnPrev=document.getElementById("btnPrev");
+  const btnNext=document.getElementById("btnNext");
+
+  function statusDot(rec){
+    // Devuelve la clase del punto de examen según su estado
+    if(!rec||!rec.exam) return null;
+    const st=rec.exam.state;
+    if(st==="pass") return "exam-pass";
+    if(st==="fail") return "exam-fail";
+    return "exam-pending";
+  }
+
+  function renderCalendar(){
+    const y=view.getFullYear(), m=view.getMonth();
+    moLabel.textContent=MONTHS[m];
+    yrLabel.textContent=y;
+
+    // Lunes = 0
+    const first=new Date(y,m,1);
+    let lead=(first.getDay()+6)%7;
+    const daysInMonth=new Date(y,m+1,0).getDate();
+
+    grid.innerHTML="";
+    for(let i=0;i<lead;i++){
+      const b=document.createElement("div");
+      b.className="cell blank"; grid.appendChild(b);
+    }
+    for(let day=1;day<=daysInMonth;day++){
+      const d=new Date(y,m,day);
+      const k=key(d);
+      const ph=phaseOf(d);
+      const rec=dayData(k);
+
+      const cell=document.createElement("div");
+      cell.className="cell"+(ph!=="none"?" "+ph:"")+(sameDay(d,TODAY)?" today":"");
+      cell.tabIndex=0;
+      cell.setAttribute("role","button");
+      cell.dataset.k=k;
+
+      const num=document.createElement("div");
+      num.className="num"; num.textContent=day;
+      cell.appendChild(num);
+
+      // Puntos indicadores
+      const dots=document.createElement("div");
+      dots.className="dots";
+      if(rec&&rec.log&&rec.log.trim()){
+        const dd=document.createElement("span"); dd.className="d log"; dd.title="Bitácora guardada"; dots.appendChild(dd);
+      }
+      const exDot=statusDot(rec);
+      if(exDot){
+        const de=document.createElement("span"); de.className="d "+exDot;
+        de.title="Examen: "+(exDot==="exam-pass"?"Aprobado":exDot==="exam-fail"?"Requiere repaso":"Pendiente");
+        dots.appendChild(de);
+      }
+      if(dots.childElementCount) cell.appendChild(dots);
+
+      if(ph!=="none"){
+        const f=document.createElement("div");
+        f.className="focus"; f.textContent=FOCUS[ph];
+        cell.appendChild(f);
+      }
+      if(MILESTONES[k]){
+        const mile=document.createElement("div");
+        mile.className="mile";
+        mile.textContent=MILESTONES[k]==="IMAT"?"Examen IMAT":"PAES";
+        cell.appendChild(mile);
+      }
+
+      cell.addEventListener("click",()=>openModal(d));
+      cell.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();openModal(d);} });
+      grid.appendChild(cell);
+    }
+    btnPrev.disabled = (y===MIN.getFullYear()&&m===MIN.getMonth());
+    btnNext.disabled = (y===MAX.getFullYear()&&m===MAX.getMonth());
+  }
+
+  btnPrev.addEventListener("click",()=>{ view=new Date(view.getFullYear(),view.getMonth()-1,1); renderCalendar(); });
+  btnNext.addEventListener("click",()=>{ view=new Date(view.getFullYear(),view.getMonth()+1,1); renderCalendar(); });
+  document.getElementById("btnToday").addEventListener("click",()=>{ view=new Date(TODAY.getFullYear(),TODAY.getMonth(),1); renderCalendar(); });
+
+  /* ================= Modal ================= */
+  const overlay=document.getElementById("overlay");
+  const mhDate=document.getElementById("mhDate");
+  const mhTag=document.getElementById("mhTag");
+  const logText=document.getElementById("logText");
+  const btnSave=document.getElementById("btnSave");
+  const saveNote=document.getElementById("saveNote");
+  const savedMeta=document.getElementById("savedMeta");
+  const examZone=document.getElementById("examZone");
+  let currentKey=null, currentDate=null;
+
+  const LONG_DATE=new Intl.DateTimeFormat("es-CL",{weekday:"long",day:"numeric",month:"long"});
+
+  function openModal(d){
+    currentDate=d; currentKey=key(d);
+    const ph=phaseOf(d);
+    mhDate.textContent=LONG_DATE.format(d);
+    mhTag.className="mh-tag "+(ph==="none"?"none":ph);
+    mhTag.textContent = ph==="imat"?"Fase IMAT":ph==="paes"?"Fase PAES":"Fuera del plan";
+
+    const rec=dayData(currentKey);
+    logText.value = rec&&rec.log ? rec.log : "";
+    saveNote.textContent=""; saveNote.className="save-note";
+    renderSavedMeta(rec);
+    renderExam(rec);
+
+    overlay.classList.add("open");
+    document.body.style.overflow="hidden";
+    setTimeout(()=>logText.focus(),120);
+  }
+  function closeModal(){
+    overlay.classList.remove("open");
+    document.body.style.overflow="";
+    currentKey=null; currentDate=null;
+  }
+  document.getElementById("btnClose").addEventListener("click",closeModal);
+  overlay.addEventListener("click",e=>{ if(e.target===overlay) closeModal(); });
+  document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&overlay.classList.contains("open")) closeModal(); });
+
+  function renderSavedMeta(rec){
+    if(rec&&rec.savedAt){
+      const dt=new Date(rec.savedAt);
+      let html="Última actualización: <b>"+dt.toLocaleDateString("es-CL")+" "+dt.toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"})+"</b>";
+      if(rec.exam){
+        html+='<div class="subj-tags">'+rec.exam.subjects.map(s=>'<span class="st">'+s+'</span>').join("")+"</div>";
+      }
+      savedMeta.innerHTML=html;
+      savedMeta.classList.add("show");
+    }else{
+      savedMeta.classList.remove("show");
+      savedMeta.innerHTML="";
+    }
+  }
+
+  /* ---------- Guardar progreso ---------- */
+  btnSave.addEventListener("click",()=>{
+    const text=logText.value.trim();
+    if(!text){
+      saveNote.textContent="Escribe algo en la bitácora antes de guardar.";
+      saveNote.className="save-note";
+      logText.focus();
+      return;
+    }
+    let rec=dayData(currentKey)||{};
+    const hadExam=!!rec.exam;
+    rec.log=text;
+    rec.savedAt=Date.now();
+    // (Re)genera el examen a partir del contenido escaneado
+    const exam=buildExam(text);
+    rec.exam={
+      questions:exam.questions,
+      subjects:exam.subjects,
+      generic:exam.generic,
+      state:"pending",   // pending | pass | fail
+      answers:[],
+      score:null
+    };
+    DATA[currentKey]=rec;
+    persist();
+
+    saveNote.textContent = hadExam
+      ? "✓ Progreso guardado. Examen regenerado con el contenido nuevo."
+      : "✓ Progreso guardado. Se generó tu Mini Examen Final del Contenido.";
+    saveNote.className="save-note ok";
+    renderSavedMeta(rec);
+    renderExam(rec);
+    renderCalendar();
+  });
+
+  /* ================= Centro de Repaso Activo ================= */
+  function statusPill(state){
+    if(state==="pass") return '<span class="exam-status st-pass"><span class="d"></span>Aprobado · 100%</span>';
+    if(state==="fail") return '<span class="exam-status st-fail"><span class="d"></span>Requiere repaso</span>';
+    return '<span class="exam-status st-pending"><span class="d"></span>Pendiente</span>';
+  }
+
+  function accentBtn(){ return phaseOf(currentDate)==="paes"?"btn-amber":"btn-primary"; }
+
+  function renderExam(rec){
+    if(!rec||!rec.exam){
+      examZone.innerHTML='<div class="exam-empty"><div class="big">🧠</div>Aún no hay examen para este día.<br>Escribe tu bitácora y pulsa <b>Guardar Progreso</b> para generar un mini examen con repetición espaciada.</div>';
+      return;
+    }
+    const ex=rec.exam;
+    const started = ex.answers && ex.answers.length===ex.questions.length;
+    const finished = ex.score!==null;
+
+    let html=statusPill(ex.state);
+    html+='<div class="exam-summary">Mini Examen Final del Contenido · <b>'+ex.questions.length+' preguntas</b>'
+        + (ex.generic?' · selección aleatoria del banco':' · '+ex.subjects.join(", "))+'</div>';
+
+    if(!started){
+      // Estado inicial: botón para iniciar
+      html+='<button class="btn '+accentBtn()+' btn-full" id="btnStart">Iniciar Examen</button>';
+      examZone.innerHTML=html;
+      document.getElementById("btnStart").addEventListener("click",startExam);
+      return;
+    }
+
+    if(finished){
+      const pass=ex.score===ex.questions.length;
+      const pct=Math.round(ex.score/ex.questions.length*100);
+      html+='<div class="score-banner '+(pass?"pass":"fail")+'"><div class="pct">'+pct+'%</div>'
+          + '<div class="lbl">'+ex.score+' de '+ex.questions.length+' correctas · '
+          + (pass?"¡Dominado! Repite en unos días para consolidar.":"Revisa los errores y vuelve a intentarlo.")+'</div></div>';
+    }
+
+    html+='<div id="qList"></div>';
+    html+='<div class="exam-actions">'
+        + '<button class="btn btn-ghost" id="btnReset">Reiniciar Examen</button>'
+        + (finished?'':'<button class="btn '+accentBtn()+'" id="btnCheck" disabled>Ver resultado</button>')
+        + '</div>';
+    examZone.innerHTML=html;
+
+    renderQuestions(rec, finished);
+    document.getElementById("btnReset").addEventListener("click",resetExam);
+    const btnCheck=document.getElementById("btnCheck");
+    if(btnCheck){
+      const allAnswered=ex.answers.every(a=>a!==null&&a!==undefined);
+      btnCheck.disabled=!allAnswered;
+      btnCheck.onclick=gradeExam;
+    }
+  }
+
+  function startExam(){
+    const rec=dayData(currentKey);
+    rec.exam.answers=new Array(rec.exam.questions.length).fill(null);
+    rec.exam.score=null;
+    rec.exam.state="pending";
+    DATA[currentKey]=rec; persist();
+    renderExam(rec);
+  }
+
+  function resetExam(){
+    const rec=dayData(currentKey);
+    rec.exam.answers=[];
+    rec.exam.score=null;
+    rec.exam.state="pending";
+    DATA[currentKey]=rec; persist();
+    renderExam(rec);
+    renderCalendar();
+  }
+
+  function renderQuestions(rec, finished){
+    const ex=rec.exam;
+    const qList=document.getElementById("qList");
+    qList.innerHTML="";
+    ex.questions.forEach((q,qi)=>{
+      const card=document.createElement("div");
+      card.className="q";
+      const chosen = ex.answers?ex.answers[qi]:null;
+
+      const head=document.createElement("div");
+      head.className="q-head";
+      head.innerHTML='<span class="q-n">'+(qi+1)+'</span>'
+        +'<div><div class="q-text">'+q.q+'</div><div class="q-subj">'+q.subj+'</div></div>';
+      card.appendChild(head);
+
+      const opts=document.createElement("div");
+      opts.className="opts";
+      q.o.forEach((optText,oi)=>{
+        const b=document.createElement("button");
+        b.className="opt";
+        const letter=String.fromCharCode(65+oi);
+        b.innerHTML='<span class="mk">'+letter+'</span><span>'+optText+'</span>';
+
+        if(finished){
+          b.disabled=true;
+          if(oi===q.c){ b.classList.add("correct"); b.querySelector(".mk").textContent="✓"; }
+          else if(chosen===oi){ b.classList.add("wrong"); b.querySelector(".mk").textContent="✕"; }
+          else b.classList.add("muted");
+        }else{
+          if(chosen===oi) b.classList.add("selected");
+          b.addEventListener("click",()=>selectAnswer(qi,oi));
+        }
+        opts.appendChild(b);
+      });
+      card.appendChild(opts);
+      qList.appendChild(card);
+    });
+  }
+
+  function selectAnswer(qi,oi){
+    const rec=dayData(currentKey);
+    if(!rec.exam.answers||rec.exam.answers.length!==rec.exam.questions.length){
+      rec.exam.answers=new Array(rec.exam.questions.length).fill(null);
+    }
+    rec.exam.answers[qi]=oi;
+    DATA[currentKey]=rec; persist();
+
+    // Re-render de tarjetas para reflejar la selección y habilitar el botón
+    renderQuestions(rec,false);
+    const btnCheck=document.getElementById("btnCheck");
+    if(btnCheck){
+      btnCheck.disabled=!rec.exam.answers.every(a=>a!==null&&a!==undefined);
+      btnCheck.onclick=gradeExam;
+    }
+  }
+
+  function gradeExam(){
+    const rec=dayData(currentKey);
+    const ex=rec.exam;
+    let score=0;
+    ex.questions.forEach((q,qi)=>{ if(ex.answers[qi]===q.c) score++; });
+    ex.score=score;
+    ex.state = (score===ex.questions.length)?"pass":"fail";
+    DATA[currentKey]=rec; persist();
+    renderExam(rec);
+    renderCalendar();
+    // Desplaza al banner de puntaje
+    setTimeout(()=>{ const b=examZone.querySelector(".score-banner"); if(b) b.scrollIntoView({behavior:"smooth",block:"nearest"}); },60);
+  }
+
+  /* ================= Init ================= */
+  renderCalendar();
+})();
+</script>
+</body>
+</html>
