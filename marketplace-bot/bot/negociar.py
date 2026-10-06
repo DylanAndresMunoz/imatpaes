@@ -157,28 +157,35 @@ class Negociador:
 			self.enviar(decision.mensaje, titulo, decision.resumen)
 
 		elif decision.accion == "proponer_trato":
+			trato = describir_trato(decision)
 			eleccion, texto = aviso.preguntar(
-				f"{prefijo}¿Cerrar trato por {config.MONEDA}{formato(decision.precio_acordado)}?",
+				f"{prefijo}¿Aceptar {trato}?",
 				explicar(anuncio, mensajes, decision),
 				decision.mensaje,
-				[("aceptar", "✅ Aceptar y enviar"), ("rechazar", "❌ Rechazar este precio"), ("despues", "⏸ Decidir más tarde")],
+				[("aceptar", "✅ Aceptar y enviar"), ("rechazar", "❌ Rechazar"), ("despues", "⏸ Decidir más tarde")],
 				config.AVISO_TIMEOUT_MIN,
 			)
 			if eleccion == "despues":
 				return self._dejar_pendiente(conversacion, firma, decision)
 			if eleccion == "aceptar":
-				self.enviar(texto, titulo, f"trato aceptado por {config.MONEDA}{formato(decision.precio_acordado)}")
+				self.enviar(texto, titulo, f"aceptaste {trato}")
 				conversacion["estado"] = "cerrado"
 				conversacion["precio_acordado"] = decision.precio_acordado
 			else:
-				conversacion["rechazados"].append(decision.precio_acordado)
+				if decision.permuta:
+					conversacion.setdefault("permutas_rechazadas", []).append(decision.permuta)
+				else:
+					conversacion["rechazados"].append(decision.precio_acordado)
 				conversacion["pendiente"] = None
-				registrar("trato rechazado", titulo, f"{config.MONEDA}{formato(decision.precio_acordado)}")
+				registrar("trato rechazado", titulo, trato)
 				self.estado.guardar()
 				if not reintento:
 					# Volvemos a preguntar a la IA para que haga una contraoferta
 					return self.procesar(url, reintento=True)
 				return
+
+		elif not config.AVISAR_OTRAS_PREGUNTAS:
+			registrar("para ti", titulo, "pregunta que respondes tú: " + decision.resumen)
 
 		else:  # pedir_ayuda
 			eleccion, texto = aviso.preguntar(
@@ -255,12 +262,13 @@ def salvaguardas(decision, anuncio, conversacion):
 
 	def ayuda(motivo):
 		return ia.Decision(accion="pedir_ayuda", mensaje=decision.mensaje, precio_acordado=decision.precio_acordado,
-			resumen=f"{motivo} {decision.resumen}")
+			permuta=decision.permuta, resumen=f"{motivo} {decision.resumen}")
 
 	if decision.accion == "proponer_trato":
 		if conversacion["estado"] == "cerrado":
 			return ayuda("El trato ya estaba cerrado y la IA propuso otro.")
-		if decision.precio_acordado is None or (minimo is not None and decision.precio_acordado < minimo):
+		# En una permuta el valor lo decides tú en la ventana; en dinero no puede bajar del mínimo
+		if not decision.permuta and (decision.precio_acordado is None or (minimo is not None and decision.precio_acordado < minimo)):
 			return ayuda("La IA propuso un trato por debajo del mínimo.")
 
 	if decision.accion == "responder":
@@ -301,11 +309,19 @@ def formato(numero):
 	return str(numero)
 
 
+def describir_trato(decision):
+	if decision.permuta:
+		extra = f" + {config.MONEDA}{formato(decision.precio_acordado)}" if decision.precio_acordado else ""
+		return f"permuta por {decision.permuta}{extra}"
+	return f"venta por {config.MONEDA}{formato(decision.precio_acordado)}"
+
+
 def explicar(anuncio, mensajes, decision):
 	ultimos = "\n".join(("Yo: " if m["mio"] else "Comprador: ") + m["texto"] for m in mensajes[-8:])
 	return (
 		f"Anuncio: {anuncio.titulo}\n"
 		f"Precio publicado: {config.MONEDA}{formato(anuncio.precio)}   |   Tu mínimo: {config.MONEDA}{formato(anuncio.precio_minimo)}\n\n"
-		f"Resumen de la IA: {decision.resumen}\n\n"
+		+ (f"Permuta ofrecida: {decision.permuta}\n" if decision.permuta else "")
+		+ f"Resumen de la IA: {decision.resumen}\n\n"
 		f"Últimos mensajes:\n{ultimos}"
 	)

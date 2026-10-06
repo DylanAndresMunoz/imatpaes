@@ -6,7 +6,7 @@ Basado en el proyecto de código abierto *facebook-marketplace-bot* (licencia GP
 |---|---|
 | `python main.py mejorar` | La IA reescribe tus títulos y descripciones para que aparezcan en más búsquedas. Tus textos originales no se tocan. |
 | `python main.py publicar` | Borra tus anuncios y los vuelve a publicar para que salgan arriba (y los comparte en tus grupos). |
-| `python main.py negociar` | Lee los mensajes de los compradores, responde y regatea sin bajar nunca de tu precio mínimo. **Antes de cerrar un trato te muestra una ventana para que lo apruebes.** |
+| `python main.py negociar` | Contesta solo los mensajes típicos: **"¿sigue disponible?"**, **rebajas** y **permutas**. Regatea sin bajar nunca de tu precio mínimo y **antes de cerrar un trato te muestra una ventana para que lo apruebes**. Todo lo demás lo respondes tú. |
 | `python main.py diagnostico` | Muestra cómo lee el bot tus chats, sin responder nada. Úsalo la primera vez. |
 | `python main.py validar` | Revisa tus CSV (columnas, precios, que existan las fotos). |
 
@@ -35,6 +35,7 @@ Basado en el proyecto de código abierto *facebook-marketplace-bot* (licencia GP
 | `Carpeta fotos` | Carpeta donde están las fotos: `C:\Fotos\bici` (Windows) o `/Users/tu/Fotos/bici` (Mac). |
 | `Fotos` | Nombres de las fotos separados por `;` → `foto1.jpg; foto2.jpg` |
 | `Grupos` | Nombres exactos de grupos separados por `;` (opcional). |
+| `Permuta` | Si aceptas cambios y por qué: `Sí, por celular o consola` o `No`. Vacío = no aceptas permutas. |
 | `Info extra` | **Muy importante para negociar:** dónde y cuándo entregas, formas de pago y defectos. La IA solo usa lo que pongas aquí y en la descripción; si le preguntan algo que no sabe, te pregunta a ti. |
 | `Titulo mejorado`, `Descripcion mejorada` | Las rellena `mejorar`. Si existen, se publican en vez de las originales. Bórralas si no te gustan. |
 
@@ -53,15 +54,22 @@ python main.py negociar --real  # 6. Cuando te convenza, en modo real
 
 Deja la ventana de Chrome abierta mientras el bot trabaja. Para pararlo pulsa `Ctrl + C`.
 
-## Cómo negocia
+## Qué contesta el bot (y qué no)
 
-- Defiende el precio publicado y baja poco a poco, pidiendo algo a cambio (que retire hoy, pago al contado).
-- **Nunca baja de tu `Precio minimo`.** Además de decírselo a la IA, el código revisa cada mensaje: si aparece una cifra por debajo de tu mínimo (también escrita como "140 mil", "140 lucas" o "4,5 millones"), no lo envía y te pregunta a ti.
-- **No cierra tratos sola.** Cuando un comprador acepta un precio, te aparece una ventana con el resumen y el mensaje de confirmación:
-  - **✅ Aceptar y enviar**: envía la confirmación (puedes editarla antes).
-  - **❌ Rechazar este precio**: la IA hace una contraoferta y no vuelve a ofrecer ese precio.
-  - **⏸ Decidir más tarde**: te vuelve a preguntar en la siguiente revisión.
-- Te pide ayuda (con otra ventana) si le preguntan algo que no sabe, si piden envíos, pagos por adelantado o enlaces, o si algo parece una estafa.
+Solo responde tres tipos de mensajes:
+
+1. **"¿Sigue disponible?"**: dice que sí e invita a avanzar.
+2. **"¿Lo menos?" / "¿Me lo dejas en X?"**: defiende tu precio y baja poco a poco, pidiendo algo a cambio (que retire hoy, pago al contado). **Nunca baja de tu `Precio minimo`.** Además de decírselo a la IA, el código revisa cada mensaje: si aparece una cifra por debajo de tu mínimo (también escrita como "140 mil", "140 lucas" o "4,5 millones"), no lo envía y te pregunta a ti.
+3. **"¿Aceptas permuta?"**: si en `Permuta` pusiste que no, lo rechaza con amabilidad y ofrece la venta. Si aceptas, pregunta qué ofrece (qué es, modelo, estado y si agrega dinero) y te lo pasa a ti para que decidas. **Nunca acepta una permuta sola.**
+
+**Los tratos los cierras tú.** Cuando un comprador acepta un precio o propone una permuta concreta, te aparece una ventana con el resumen y el mensaje de confirmación:
+- **✅ Aceptar y enviar**: envía la confirmación (puedes editarla antes).
+- **❌ Rechazar**: la IA sigue negociando y no vuelve a ofrecer ese precio ni esa permuta.
+- **⏸ Decidir más tarde**: te vuelve a preguntar en la siguiente revisión.
+
+**Todo lo demás lo respondes tú**: preguntas sobre el producto, envíos, formas de pago, fotos, coordinar la entrega o cualquier cosa rara. Como el bot abre el chat y Facebook lo marca como leído, te avisa con una ventana para que no se te pase. Puedes escribir la respuesta ahí mismo o elegir "Lo respondo yo en Facebook". Si prefieres que no salga la ventana, pon `AVISAR_OTRAS_PREGUNTAS = False` en `config.py`.
+
+Otros detalles:
 - Solo toca los chats de anuncios que están en tus CSV. Tus chats personales se ignoran.
 - Si un comprador pregunta si habla con un bot, no lo niega: dice que es un asistente y que tú confirmas los tratos.
 
@@ -76,6 +84,7 @@ Deja la ventana de Chrome abierta mientras el bot trabaja. Para pararlo pulsa `C
 | `INTERVALO_REVISION_MIN` | 5 | Cada cuánto revisa los mensajes. |
 | `MAX_MENSAJES_POR_HORA` | 20 | Límite de mensajes enviados. |
 | `AVISO_TIMEOUT_MIN` | 15 | Si no contestas la ventana en este tiempo, se cierra y te vuelve a preguntar después. |
+| `AVISAR_OTRAS_PREGUNTAS` | `True` | Muestra una ventana cuando llega una pregunta que el bot no contesta. |
 
 Todo lo que hace el bot queda anotado en `datos/registro.csv`.
 

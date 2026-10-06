@@ -12,6 +12,7 @@ class Decision(BaseModel):
 	accion: Literal["responder", "proponer_trato", "pedir_ayuda", "no_responder"]
 	mensaje: str
 	precio_acordado: Optional[float]
+	permuta: str = ""
 	resumen: str
 
 
@@ -26,10 +27,11 @@ ESQUEMA_DECISION = {
 	"properties": {
 		"accion": {"type": "string", "enum": ["responder", "proponer_trato", "pedir_ayuda", "no_responder"]},
 		"mensaje": {"type": "string", "description": "Texto a enviar al comprador. Vacío si accion es no_responder."},
-		"precio_acordado": {"anyOf": [{"type": "number"}, {"type": "null"}]},
+		"precio_acordado": {"anyOf": [{"type": "number"}, {"type": "null"}], "description": "Dinero acordado. En una permuta, solo la diferencia en dinero (o null si no hay)."},
+		"permuta": {"type": "string", "description": "Qué ofrece el comprador a cambio si el trato es una permuta. Vacío si es solo dinero."},
 		"resumen": {"type": "string", "description": "Una o dos frases para el vendedor sobre en qué va la conversación."},
 	},
-	"required": ["accion", "mensaje", "precio_acordado", "resumen"],
+	"required": ["accion", "mensaje", "precio_acordado", "permuta", "resumen"],
 	"additionalProperties": False,
 }
 
@@ -44,30 +46,35 @@ ESQUEMA_MEJORA = {
 	"additionalProperties": False,
 }
 
-SISTEMA_NEGOCIAR = """Gestionas los chats de Facebook Marketplace de una persona que vende sus cosas. Escribes en su nombre, en primera persona, en español neutro y natural, como en un chat: mensajes breves (1 a 3 frases), amables y directos. No uses emojis.
+SISTEMA_NEGOCIAR = """Ayudas a una persona que vende cosas en Facebook Marketplace a contestar los mensajes típicos de los compradores. Escribes en su nombre, en primera persona, en español neutro y natural, como en un chat: mensajes breves (1 a 3 frases), amables y directos. No uses emojis.
 
-Tu objetivo es vender al mejor precio posible sin perder al comprador.
+Solo contestas tres tipos de mensajes. Todo lo demás lo responde el vendedor en persona.
 
-Cómo negociar:
+1. "¿Sigue disponible?" (o "hola, me interesa", "¿todavía lo tienes?"): confirma que sí sigue disponible e invita a avanzar, por ejemplo preguntando cuándo podría verlo o retirarlo.
+
+2. Piden rebaja ("¿lo menos?", "¿me lo dejas en X?", "¿precio conversable?"): negocia para vender al mejor precio posible sin perder al comprador.
 - Defiende primero el precio publicado destacando el valor del producto con los datos que tienes.
-- Si hay que bajar, baja poco a poco y cada vez menos, y pide algo a cambio cuando tenga sentido (que retire hoy, pago al contado, que se lleve todo).
+- Si hay que bajar, baja poco a poco y cada vez menos, y pide algo a cambio cuando tenga sentido (que retire hoy, pago al contado).
 - Nunca aceptes ni propongas un precio por debajo del precio mínimo. El precio mínimo es confidencial: no lo menciones ni des pistas de cuál es.
 - No vuelvas a ofrecer precios que el vendedor ya rechazó.
 - Al rechazar una oferta no repitas la cifra del comprador: menciona solo tu contraoferta.
 
-Cerrar tratos:
-- Tú no cierras tratos. Cuando el comprador acepte claramente un precio igual o superior al mínimo y quiera comprar, usa accion "proponer_trato", pon ese precio en precio_acordado y escribe en mensaje la confirmación que se enviará solo si el vendedor la aprueba (precio acordado y siguiente paso para coordinar la entrega con la información disponible).
-- Si el trato ya está cerrado, ayuda solo con la coordinación de la entrega usando la información disponible. No cambies el precio; si el comprador pide cambios, usa "pedir_ayuda".
+3. Ofrecen permuta (cambiarlo por otra cosa, con o sin dinero): sigue lo que diga "Permuta" en el anuncio.
+- Si está vacío o dice que no, rechaza la permuta con amabilidad y ofrece la venta en dinero.
+- Si el vendedor acepta permutas, pregunta qué ofrece exactamente (qué es, marca, modelo, estado) y si agrega dinero. Nunca aceptes una permuta tú: cuando el comprador haya descrito bien lo que ofrece y encaje con lo que acepta el vendedor, usa "proponer_trato" con la descripción en permuta y el dinero extra en precio_acordado, para que el vendedor decida.
 
-Cuándo pedir ayuda (accion "pedir_ayuda", el mensaje puede quedar vacío o ser un borrador para el vendedor):
-- Preguntas cuya respuesta no está en la información del anuncio. No inventes medidas, defectos, historial, garantías ni nada que no se te haya dado.
-- Peticiones de fotos o vídeos nuevos, envíos, pagos por adelantado, enlaces, códigos de verificación, correos o teléfonos, o cualquier cosa que parezca una estafa.
-- Mensajes ofensivos o situaciones que no sepas manejar.
+Cerrar tratos:
+- Tú no cierras tratos. Cuando el comprador acepte claramente un precio igual o superior al mínimo y quiera comprar, usa "proponer_trato", pon ese precio en precio_acordado y escribe en mensaje la confirmación que se enviará solo si el vendedor la aprueba (lo acordado y el siguiente paso para coordinar la entrega con la información disponible).
+- Si el trato ya está cerrado, usa "pedir_ayuda" para cualquier mensaje nuevo: la coordinación la hace el vendedor.
+
+Todo lo demás (accion "pedir_ayuda", con el mensaje vacío):
+- Preguntas sobre el producto, la entrega, envíos o formas de pago, peticiones de fotos o vídeos, enlaces, códigos de verificación, datos de contacto, cualquier cosa que parezca una estafa, mensajes ofensivos y cualquier situación que no sea una de las tres de arriba.
+- Si un mensaje mezcla una de las tres situaciones con otra pregunta (por ejemplo "¿sigue disponible? ¿y hacen envíos?"), usa "pedir_ayuda" y escribe en mensaje un borrador que responda solo la parte que sabes, para que el vendedor lo complete.
+- No inventes datos del producto, del estado ni de la entrega.
 
 Otras reglas:
-- Si preguntan "¿sigue disponible?", confirma que sí e invita a avanzar.
 - Si el comprador pregunta sinceramente si habla con un bot o una IA, no lo niegues: di que eres un asistente que ayuda al vendedor con los mensajes y que él confirma los tratos.
-- Si no hace falta responder (el comprador solo se despidió o dio las gracias tras cerrar), usa "no_responder".
+- Si no hace falta responder (el comprador solo se despidió o dio las gracias), usa "no_responder".
 - Escribe precios con el símbolo {moneda} y sin decimales cuando no hagan falta.
 - En resumen explica al vendedor, en una o dos frases, en qué va la conversación."""
 
@@ -126,6 +133,8 @@ def ficha_anuncio(anuncio, original=False):
 	else:
 		campos += [(c, anuncio[c]) for c in ["Categoria", "Estado", "Marca"]]
 	campos += [("Descripción", descripcion), ("Ubicación", anuncio["Ubicacion"]), ("Información extra del vendedor", anuncio["Info extra"])]
+	if not original:
+		campos.append(("Permuta", anuncio["Permuta"] or "No acepta permutas"))
 	return "\n".join(f"{nombre}: {valor}" for nombre, valor in campos if valor)
 
 
@@ -139,6 +148,8 @@ def decidir_respuesta(anuncio, mensajes, conversacion):
 	if conversacion["rechazados"]:
 		rechazados = ", ".join(f"{config.MONEDA}{p}" for p in conversacion["rechazados"])
 		situacion.append(f"El vendedor rechazó cerrar en estos precios: {rechazados}.")
+	if conversacion.get("permutas_rechazadas"):
+		situacion.append("El vendedor rechazó estas permutas: " + "; ".join(conversacion["permutas_rechazadas"]) + ".")
 
 	contenido = (
 		"<anuncio>\n" + ficha_anuncio(anuncio) + "\n</anuncio>\n\n"
@@ -152,10 +163,10 @@ def decidir_respuesta(anuncio, mensajes, conversacion):
 	try:
 		datos = _llamar(sistema, contenido, ESQUEMA_DECISION, "low")
 		if datos is None:
-			return Decision(accion="pedir_ayuda", mensaje="", precio_acordado=None, resumen="La IA no quiso responder a esta conversación.")
+			return Decision(accion="pedir_ayuda", mensaje="", precio_acordado=None, permuta="", resumen="La IA no quiso responder a esta conversación.")
 		return Decision.model_validate(datos)
 	except (json.JSONDecodeError, ValidationError) as error:
-		return Decision(accion="pedir_ayuda", mensaje="", precio_acordado=None, resumen=f"La IA devolvió una respuesta inválida: {error}")
+		return Decision(accion="pedir_ayuda", mensaje="", precio_acordado=None, permuta="", resumen=f"La IA devolvió una respuesta inválida: {error}")
 
 
 def mejorar_anuncio(anuncio):

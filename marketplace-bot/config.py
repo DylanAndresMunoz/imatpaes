@@ -21,3 +21,7 @@ INTERVALO_REVISION_MIN = 5               # Cada cuántos minutos revisa los mens
 MAX_CONVERSACIONES_POR_REVISION = 15     # Cuántos chats recientes revisa en cada vuelta
 MAX_MENSAJES_POR_HORA = 20               # Límite de mensajes enviados por hora
 AVISO_TIMEOUT_MIN = 15                   # Si no respondes la ventana en este tiempo, te vuelve a preguntar más tarde
+# El bot solo contesta "¿sigue disponible?", rebajas y permutas. Con True, cualquier otra pregunta
+# te aparece en una ventana (recomendado: al abrir el chat, Facebook lo marca como leído y podrías no verlo).
+# Con False, solo se anota en datos/registro.csv.
+AVISAR_OTRAS_PREGUNTAS = True
