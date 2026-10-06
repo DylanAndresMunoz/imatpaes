@@ -1,0 +1,6 @@
+__pycache__/
+perfil_chrome/
+datos/
+clave_api.txt
+csvs/*.bak
+.DS_Store
